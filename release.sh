@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 #
-# Cut a release: bump versions, build, publish to PyPI, tag & push, and (if gh
-# is authenticated) create the GitHub Release that HACS installs from.
+# Cut a release: run lint + tests, bump versions, build, publish to PyPI,
+# tag & push, and (if gh is authenticated) create the GitHub Release that HACS
+# installs from. The quality gate (ruff + library tests + HA integration tests)
+# runs before anything irreversible; a failure aborts the release.
 #
 # Usage:
 #   ./release.sh [--dry-run] <version>      e.g. ./release.sh 0.1.0
@@ -61,6 +63,25 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
 fi
 if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
   echo "error: tag $TAG already exists"; exit 1
+fi
+
+# --- quality gate: lint + tests BEFORE anything irreversible ---------------
+if ! "$PY" -c "import pytest" 2>/dev/null || [ ! -x "$VENV/bin/ruff" ]; then
+  echo ">> Installing lint/test tooling into $VENV"
+  "$PY" -m pip install --quiet -e ".[dev]"
+fi
+echo ">> Lint"
+"$VENV/bin/ruff" check src tests scripts custom_components tests_ha
+echo ">> Library tests"
+"$PY" -m pytest -q
+# HA integration tests need their own env (Python <= 3.12 + ha-test extra);
+# run them if that env is present, otherwise warn rather than block.
+if [ -x ".venv-ha/bin/python" ] && \
+   .venv-ha/bin/python -c "import pytest_homeassistant_custom_component" 2>/dev/null; then
+  echo ">> HA integration tests"
+  .venv-ha/bin/python -m pytest tests_ha/ -o asyncio_mode=auto -q
+else
+  echo ">> WARNING: skipping HA integration tests (.venv-ha with ha-test deps not found)"
 fi
 
 COMMITTED=0
