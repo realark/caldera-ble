@@ -23,7 +23,7 @@
     }
   ],
   "requirements": [
-    "caldera-sauna==0.0.2"
+    "caldera-sauna==0.0.3"
   ],
-  "version": "0.0.2"
+  "version": "0.0.3"
 }
