@@ -10,6 +10,12 @@ BLE proxy if the sauna is out of range of your HA host.
   <img src="screenshot-device.png" alt="Device page: climate, cabin lamp, mood light and timer" width="45%">
 </p>
 
+> ⚠️ **Safety:** Unofficial, **as-is** software with **no warranty** — and **not a
+> safety device.** Never rely on it as your only safeguard. Follow all of the
+> sauna manufacturer's safety instructions, **including unplugging the sauna when
+> it's not in use**, and never run it unattended. See
+> [Safety & liability](#safety--liability) below.
+
 ## Install (HACS)
 
 1. In **HACS → ⋮ → Custom repositories**, add
@@ -78,8 +84,19 @@ caldera-sauna-monitor        # scan by name, print decoded state; sends nothing
 Releases are cut with `./release.sh <version>` (bumps versions, publishes to
 PyPI, tags, pushes, and creates the GitHub release HACS installs from).
 
-## Disclaimer
+## Safety & liability
 
-Independent, unofficial project. Not affiliated with, endorsed by, or supported
-by Relaxe or Caldera. Reverse-engineered for personal interoperability. Use at
-your own risk — it can turn on a heater.
+This is free, unofficial, **as-is** software (see [LICENSE](LICENSE)). It comes
+with **no warranty of any kind**, and the authors accept **no liability** for any
+damage, injury, or loss arising from its use — including malfunction, incorrect
+readings, dropped or delayed commands, or a heater being left on.
+
+**This is not a safety device.** Do not rely on it for safety-critical control of
+your sauna. Your sauna's own built-in thermostat, timer, and over-temperature
+protection are the safety layer — this software must never be your only line of
+defense. Don't run the sauna unattended, and follow the manufacturer's safety
+instructions. By using this software you accept full responsibility for the
+outcome.
+
+Independent project — not affiliated with, endorsed by, or supported by Relaxe
+or Caldera. Reverse-engineered for personal interoperability.

@@ -3,7 +3,7 @@
     "flow_title": "{name}",
     "step": {
       "confirm": {
-        "description": "Add the sauna {name}? Make sure the phone app is disconnected from it before finishing."
+        "description": "Add the sauna **{name}**?\n\nDisconnect the manufacturer's phone app first — the sauna allows only one Bluetooth connection at a time.\n\n⚠️ **Safety:** This is unofficial, as-is software and is **not a safety device**. Follow all of the manufacturer's safety instructions, including **unplugging the sauna when it's not in use**, and never leave it running unattended."
       },
       "user": {
         "data": {
