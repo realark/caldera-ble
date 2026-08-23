@@ -1,0 +1,27 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "confirm": {
+        "description": "Add the sauna {name}? Make sure the phone app is disconnected from it before finishing."
+      },
+      "user": {
+        "data": {
+          "address": "Sauna"
+        }
+      }
+    },
+    "abort": {
+      "no_devices_found": "No unconfigured sauna found nearby. Power it on and disconnect the phone app.",
+      "already_configured": "This sauna is already configured."
+    }
+  },
+  "entity": {
+    "switch": {
+      "lamp": { "name": "Cabin lamp" }
+    },
+    "light": {
+      "color_light": { "name": "Mood light" }
+    }
+  }
+}

@@ -1,18 +1,33 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "caldera-sauna"
 version = "0.1.0"
-description = "Local BLE control library for Relaxe Caldera infrared saunas"
+description = "Local Bluetooth LE control library for Relaxe Caldera infrared saunas"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = "Unlicense"
+license-files = ["LICENSE"]
+authors = [{ name = "Ark" }]
+keywords = ["bluetooth", "ble", "sauna", "caldera", "relaxe", "home-assistant"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Home Automation",
+]
 dependencies = [
     "bleak>=0.22",
     "bleak-retry-connector>=3.5",
 ]
+
+[project.urls]
+Homepage = "https://github.com/realark/caldera-ble"
+Repository = "https://github.com/realark/caldera-ble"
+Issues = "https://github.com/realark/caldera-ble/issues"
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.5", "python-dotenv>=1.0"]

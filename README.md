@@ -52,10 +52,41 @@ caldera-sauna-monitor <BLE_ADDRESS>      # or target a specific address
 > The module allows only one connection at a time. Disconnect the phone app
 > before connecting from here.
 
+## Home Assistant integration
+
+Exposes the sauna as a `climate` entity (power + current/target temperature,
+timer attribute), a `switch` (cabin lamp), and a `light` (mood light with the
+color presets as effects). It uses Home Assistant's Bluetooth stack, so it works
+directly on a host adapter **or** through an ESPHome BLE proxy near the sauna.
+
+### Install via HACS (recommended)
+
+1. HACS → ⋮ → **Custom repositories** → add `https://github.com/realark/caldera-ble`
+   with category **Integration**.
+2. Install **Caldera Sauna**, then restart Home Assistant. (Home Assistant will
+   pull the `caldera-sauna` library from PyPI automatically.)
+3. The sauna should be **auto-discovered** (Settings → Devices & Services). If
+   not, add it manually — make sure the phone app is disconnected first, since
+   the module allows only one connection at a time.
+
+### Manual install
+
+Copy `custom_components/caldera_sauna/` into your HA `config/custom_components/`
+and restart.
+
 ## Status
 
 - [x] Protocol reverse-engineered and documented
 - [x] Codec + unit tests
 - [x] BLE transport + read-only monitor, verified on real hardware
-- [ ] Verified write commands (power/temp/timer/light) against hardware
-- [ ] Home Assistant custom integration (climate + light + switch)
+- [x] Verified write commands (power/temp/timer/light) against hardware
+- [x] Home Assistant custom integration (climate + light + switch)
+- [ ] Published to PyPI + HACS
+- [ ] Auto-reconnect on BLE drop; relabel light effects to real colors
+
+## Disclaimer
+
+Independent, unofficial project. Not affiliated with, endorsed by, or supported
+by Relaxe or Caldera. Reverse-engineered for personal interoperability. Use at
+your own risk — it can turn on a heater.
+
