@@ -4,6 +4,12 @@ Local control of **Relaxe Caldera** infrared saunas over Bluetooth LE — no clo
 no account. Adds sauna controls to Home Assistant, and works through an ESPHome
 BLE proxy if the sauna is out of range of your HA host.
 
+<p align="center">
+  <img src="screenshot-heat.png" alt="Sauna climate control in Heat mode" width="45%">
+  &nbsp;&nbsp;
+  <img src="screenshot-device.png" alt="Device page: climate, cabin lamp, mood light and timer" width="45%">
+</p>
+
 ## Install (HACS)
 
 1. In **HACS → ⋮ → Custom repositories**, add
