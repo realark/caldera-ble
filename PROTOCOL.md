@@ -95,6 +95,11 @@ Color index `n`: 0 White, 1 Purple, 2 Blue, 3 Cyan, 4 Green, 5 Yellow,
 > error — we can't do better at the protocol level. In the HA integration we can
 > relabel the effect names to whatever each index physically produces on a given
 > unit.
+>
+> **Hidden preset (confirmed on hardware):** although the app only cycles 0–7,
+> the command is a single digit and the firmware also responds to **index 8**
+> (a 9th preset the app never exposes). **Index 9 is a no-op** (keeps the current
+> color). So the usable range is **0–8**; senders should reject 9.
 
 **Temp/timer encoding:** the value is emitted as its raw hex, *not* BCD:
 `chars = HEX[v/16], HEX[v%16]`. So decimal 45 → `2D`, decimal 158 (°F) → `9E`.

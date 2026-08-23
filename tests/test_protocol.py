@@ -26,7 +26,8 @@ def test_color_light_onoff():
     assert p.cmd_color_light(False) == b"XCLOFZ\r\n"
 
 
-@pytest.mark.parametrize("n", range(8))
+# The app uses 0..7; hardware also has a hidden preset at 8. Index 9 is a no-op.
+@pytest.mark.parametrize("n", range(9))
 def test_set_color(n):
     assert p.cmd_set_color(n) == f"XCL0{n}Z\r\n".encode()
 
@@ -34,7 +35,7 @@ def test_set_color(n):
 def test_set_color_enum_and_bounds():
     assert p.cmd_set_color(Color.GREEN) == b"XCL04Z\r\n"
     with pytest.raises(ValueError):
-        p.cmd_set_color(8)
+        p.cmd_set_color(9)
 
 
 def test_set_target_temp_hex_not_bcd():

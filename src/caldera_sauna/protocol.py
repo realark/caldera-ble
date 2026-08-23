@@ -111,8 +111,8 @@ def cmd_color_light(on: bool) -> bytes:
 
 def cmd_set_color(color: Color | int) -> bytes:
     n = int(color)
-    if not 0 <= n <= 7:
-        raise ValueError(f"color index {n} out of range 0..7")
+    if not 0 <= n <= 8:
+        raise ValueError(f"color index {n} out of range 0..8")
     return _frame(f"CL0{n}")
 
 
@@ -220,7 +220,10 @@ def parse_status(data: bytes | str) -> SaunaState | None:
             color_on, color = False, None
         elif c3.isdigit():
             color_on = True
-            color = Color(int(c3)) if int(c3) <= 7 else None
+            try:
+                color = Color(int(c3))
+            except ValueError:
+                color = None  # a preset index we don't have a name for
         else:
             color_on, color = False, None
         audio = {"1": AudioSource.BLUETOOTH, "2": AudioSource.USB}.get(
