@@ -1,6 +1,6 @@
 """Read-only monitor CLI: scan, connect, and print decoded sauna state.
 
-Sends no commands — safe to leave running. Usage::
+Read-only — sends no commands, so it never changes the sauna's state. Usage::
 
     caldera-sauna-monitor            # scan by name 'Sauna'
     caldera-sauna-monitor <ADDRESS>  # connect to a specific address
