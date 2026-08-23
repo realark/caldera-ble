@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 
+from bleak.backends.device import BLEDevice
 from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -42,21 +43,39 @@ class CalderaCoordinator(DataUpdateCoordinator[SaunaState]):
         assert self._sauna is not None
         return self._sauna
 
-    async def async_start(self) -> None:
-        ble_device = bluetooth.async_ble_device_from_address(
+    def _ble_device(self) -> BLEDevice | None:
+        return bluetooth.async_ble_device_from_address(
             self.hass, self._address, connectable=True
         )
+
+    async def async_start(self) -> None:
+        ble_device = self._ble_device()
         if ble_device is None:
             raise ConfigEntryNotReady(
                 f"Sauna {self._address} not currently seen by Bluetooth. "
                 "Is it powered on and not connected to the phone app?"
             )
-        self._sauna = CalderaSauna(ble_device, state_callback=self._on_state)
+        self._sauna = CalderaSauna(
+            ble_device,
+            state_callback=self._on_state,
+            connection_callback=self._on_connection,
+            device_provider=self._ble_device,
+        )
         await self._sauna.start()
 
     def _on_state(self, state: SaunaState) -> None:
         # Called from the BLE notify callback; hop onto the event loop.
         self.hass.loop.call_soon_threadsafe(self.async_set_updated_data, state)
+
+    def _on_connection(self, connected: bool) -> None:
+        # On drop, mark entities unavailable until fresh state arrives; the
+        # library auto-reconnects in the background.
+        if not connected:
+            self.hass.loop.call_soon_threadsafe(self._mark_unavailable)
+
+    def _mark_unavailable(self) -> None:
+        self.last_update_success = False
+        self.async_update_listeners()
 
     async def async_stop(self) -> None:
         if self._sauna is not None:
