@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Cut a release: bump versions, build, publish to PyPI, then tag & push.
+# Cut a release: bump versions, build, publish to PyPI, tag & push, and (if gh
+# is authenticated) create the GitHub Release that HACS installs from.
 #
 # Usage:
 #   ./release.sh [--dry-run] <version>      e.g. ./release.sh 0.1.0
@@ -119,4 +120,14 @@ git tag -a "$TAG" -m "Release $TAG"
 git push origin HEAD
 git push origin "$TAG"
 
-echo ">> Released $TAG ✓  (PyPI: caldera-sauna $VERSION; git tag $TAG pushed)"
+# --- 5. GitHub Release (best-effort; this is what HACS consumes) ------------
+if command -v gh >/dev/null && gh auth status >/dev/null 2>&1; then
+  echo ">> Creating GitHub release $TAG"
+  gh release create "$TAG" --title "$TAG" --generate-notes \
+    || echo "warning: 'gh release create' failed — create it manually for HACS"
+else
+  echo ">> Skipping GitHub release (gh missing or not authenticated)."
+  echo "   For HACS, create it later:  gh release create $TAG --generate-notes"
+fi
+
+echo ">> Released $TAG ✓  (PyPI: caldera-sauna $VERSION; git tag + GitHub release $TAG)"
