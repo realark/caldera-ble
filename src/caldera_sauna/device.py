@@ -17,6 +17,7 @@ from collections.abc import Callable
 
 from bleak import BleakClient
 from bleak.backends.device import BLEDevice
+from bleak.exc import BleakError
 from bleak_retry_connector import establish_connection
 
 from . import protocol as p
@@ -37,6 +38,10 @@ _CHAR_FALLBACKS = (
 
 _RECONNECT_MIN_DELAY = 3.0
 _RECONNECT_MAX_DELAY = 300.0
+
+# When a command is issued while the link is briefly down, wait this long for
+# the background reconnect to restore it before giving up.
+_WRITE_RETRY_WAIT = 10.0
 
 StateCallback = Callable[[SaunaState], None]
 ConnectionCallback = Callable[[bool], None]
@@ -167,10 +172,36 @@ class CalderaSauna:
                 self._client = None
 
     async def _write(self, payload: bytes) -> None:
+        try:
+            await self._write_once(payload)
+            return
+        except (BleakError, RuntimeError, EOFError) as err:
+            # If we never connected (or are shutting down), fail fast.
+            if self._loop is None or self._closing:
+                raise
+            _LOGGER.debug(
+                "Write to %s failed (%s); waiting for reconnect to retry",
+                self.address,
+                err,
+            )
+        if not await self._wait_connected(_WRITE_RETRY_WAIT):
+            raise RuntimeError("Sauna not connected")
+        await self._write_once(payload)
+
+    async def _write_once(self, payload: bytes) -> None:
         if self._client is None or self._char is None or not self._client.is_connected:
             raise RuntimeError("Sauna not connected")
         async with self._lock:
             await self._client.write_gatt_char(self._char, payload, response=True)
+
+    async def _wait_connected(self, timeout: float) -> bool:
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        while loop.time() < deadline and not self._closing:
+            if self.is_connected:
+                return True
+            await asyncio.sleep(0.2)
+        return self.is_connected
 
     # --- Commands -----------------------------------------------------------
 

@@ -139,6 +139,26 @@ def test_auto_reconnect_on_drop(monkeypatch):
     asyncio.run(go())
 
 
+def test_write_retries_after_reconnect(monkeypatch):
+    monkeypatch.setattr(device, "_RECONNECT_MIN_DELAY", 0.01)
+    clients: list[FakeClient] = []
+    monkeypatch.setattr(device, "establish_connection", _fake_establish(clients))
+
+    async def go():
+        s = CalderaSauna(_fake_device())
+        await s.start()
+
+        clients[0].drop()  # link blips right before a command
+        # Command issued while down: should wait for reconnect, then land on
+        # the new client rather than raising.
+        await s.async_set_power(True)
+        assert len(clients) == 2
+        assert clients[1].writes == [b"XSWONZ\r\n"]
+        await s.stop()
+
+    asyncio.run(go())
+
+
 def test_stop_prevents_reconnect(monkeypatch):
     monkeypatch.setattr(device, "_RECONNECT_MIN_DELAY", 0.01)
     clients: list[FakeClient] = []

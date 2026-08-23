@@ -22,6 +22,9 @@
     },
     "light": {
       "color_light": { "name": "Mood light" }
+    },
+    "number": {
+      "timer": { "name": "Timer" }
     }
   }
 }

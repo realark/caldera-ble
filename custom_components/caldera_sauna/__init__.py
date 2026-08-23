@@ -7,7 +7,12 @@ from homeassistant.core import HomeAssistant
 
 from .coordinator import CalderaCoordinator
 
-PLATFORMS: list[Platform] = [Platform.CLIMATE, Platform.LIGHT, Platform.SWITCH]
+PLATFORMS: list[Platform] = [
+    Platform.CLIMATE,
+    Platform.LIGHT,
+    Platform.NUMBER,
+    Platform.SWITCH,
+]
 
 CalderaConfigEntry = ConfigEntry[CalderaCoordinator]
 
