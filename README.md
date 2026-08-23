@@ -1,92 +1,79 @@
-# caldera-sauna
+# Caldera Sauna — Home Assistant integration
 
-Local control library for **Relaxe Caldera** infrared saunas over Bluetooth LE,
-plus (planned) a Home Assistant custom integration. Reverse-engineered from the
-manufacturer Android app — see [`PROTOCOL.md`](PROTOCOL.md) for the full wire
-protocol.
+Local control of **Relaxe Caldera** infrared saunas over Bluetooth LE — no cloud,
+no account. Adds sauna controls to Home Assistant, and works through an ESPHome
+BLE proxy if the sauna is out of range of your HA host.
 
-The sauna exposes a cheap serial-over-BLE module (service `FFF0`, characteristic
-`FFF1` for both commands and status notifications) speaking a plain ASCII
-protocol. No pairing/PIN/auth.
+## Install (HACS)
 
-## Layout
+1. In **HACS → ⋮ → Custom repositories**, add
+   `https://github.com/realark/caldera-ble` as an **Integration**.
+2. Search for **Caldera Sauna**, download it, and **restart Home Assistant**.
+3. Open **Settings → Devices & Services** — your sauna should be discovered
+   automatically. Click **Configure** to add it.
+
+> Disconnect the manufacturer's phone app from the sauna first — the sauna
+> allows only one Bluetooth connection at a time.
+
+That's it. You'll get:
+
+- **Climate** — power on/off, current & target temperature
+- **Light** — RGB mood light (color presets as effects)
+- **Switch** — cabin lamp
+- **Number** — session timer (minutes)
+
+### Manual install (without HACS)
+
+Copy `custom_components/caldera_sauna/` into your HA `config/custom_components/`
+and restart.
+
+---
+
+## How it works
+
+Reverse-engineered from the manufacturer's Android app: the sauna exposes a
+cheap serial-over-BLE module (service `FFF0`, characteristic `FFF1`) speaking a
+plain ASCII protocol — no pairing, PIN, or auth. The integration talks to it
+through Home Assistant's Bluetooth stack, so both host adapters and ESPHome BLE
+proxies work. Full wire protocol: [`PROTOCOL.md`](PROTOCOL.md).
+
+The protocol logic lives in a standalone, hardware-independent Python library
+([`caldera-sauna`](https://pypi.org/project/caldera-sauna/) on PyPI); the Home
+Assistant integration is a thin layer on top.
+
+## Developing
 
 ```
 src/caldera_sauna/
   protocol.py   pure codec (no I/O) — encode commands, decode status frames
   device.py     bleak + bleak-retry-connector transport (proxy-compatible)
   monitor.py    read-only CLI: scan, connect, print decoded state
-scripts/probe.py  throwaway GATT dump / notify probe (read-only)
+scripts/          hardware probes / calibration tools (read-only unless noted)
 tests/            unit tests for the codec (no hardware needed)
+custom_components/caldera_sauna/   the Home Assistant integration
 ```
-
-## Dev quickstart
 
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"
-pytest          # 23 tests, no hardware
-ruff check src tests scripts
+pytest                       # codec tests, no hardware
+ruff check src tests scripts custom_components
 ```
 
-## Device config
-
-Device-specific info stays out of git. Copy the example and fill in your
-sauna's BLE address (find it with `bluetoothctl scan on` or nRF Connect):
+Device-specific info stays out of git — copy `.env.example` to `.env` and set
+your sauna's BLE address (find it with `bluetoothctl scan on` or nRF Connect).
+The `scripts/` tools read `.env`; with no address set they scan by name
+(default `Sauna`). Read-only state monitor:
 
 ```bash
-cp .env.example .env
-# edit .env -> CALDERA_SAUNA_ADDRESS=...
+caldera-sauna-monitor        # scan by name, print decoded state; sends nothing
 ```
 
-The `scripts/` tools read `.env`; if no address is set they scan for a device
-whose name contains `CALDERA_SAUNA_NAME` (default `Sauna`).
-
-## Read-only monitor (safe — sends no commands)
-
-```bash
-caldera-sauna-monitor                    # scan for a 'Sauna' device by name
-caldera-sauna-monitor <BLE_ADDRESS>      # or target a specific address
-```
-
-> The module allows only one connection at a time. Disconnect the phone app
-> before connecting from here.
-
-## Home Assistant integration
-
-Exposes the sauna as a `climate` entity (power + current/target temperature,
-timer attribute), a `switch` (cabin lamp), and a `light` (mood light with the
-color presets as effects). It uses Home Assistant's Bluetooth stack, so it works
-directly on a host adapter **or** through an ESPHome BLE proxy near the sauna.
-
-### Install via HACS (recommended)
-
-1. HACS → ⋮ → **Custom repositories** → add `https://github.com/realark/caldera-ble`
-   with category **Integration**.
-2. Install **Caldera Sauna**, then restart Home Assistant. (Home Assistant will
-   pull the `caldera-sauna` library from PyPI automatically.)
-3. The sauna should be **auto-discovered** (Settings → Devices & Services). If
-   not, add it manually — make sure the phone app is disconnected first, since
-   the module allows only one connection at a time.
-
-### Manual install
-
-Copy `custom_components/caldera_sauna/` into your HA `config/custom_components/`
-and restart.
-
-## Status
-
-- [x] Protocol reverse-engineered and documented
-- [x] Codec + unit tests
-- [x] BLE transport + read-only monitor, verified on real hardware
-- [x] Verified write commands (power/temp/timer/light) against hardware
-- [x] Home Assistant custom integration (climate + light + switch)
-- [ ] Published to PyPI + HACS
-- [ ] Auto-reconnect on BLE drop; relabel light effects to real colors
+Releases are cut with `./release.sh <version>` (bumps versions, publishes to
+PyPI, tags, pushes, and creates the GitHub release HACS installs from).
 
 ## Disclaimer
 
 Independent, unofficial project. Not affiliated with, endorsed by, or supported
 by Relaxe or Caldera. Reverse-engineered for personal interoperability. Use at
 your own risk — it can turn on a heater.
-
