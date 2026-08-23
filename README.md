@@ -92,11 +92,12 @@ damage, injury, or loss arising from its use — including malfunction, incorrec
 readings, dropped or delayed commands, or a heater being left on.
 
 **This is not a safety device.** Do not rely on it for safety-critical control of
-your sauna. Your sauna's own built-in thermostat, timer, and over-temperature
-protection are the safety layer — this software must never be your only line of
-defense. Don't run the sauna unattended, and follow the manufacturer's safety
-instructions. By using this software you accept full responsibility for the
-outcome.
+your sauna, and do not assume that software commands, reported state, or
+connectivity are reliable. It does not replace or augment any safety mechanisms
+provided by the manufacturer — never bypass or disable those. Don't run the sauna
+unattended, and follow all of the manufacturer's safety instructions, including
+unplugging the sauna when it's not in use. You are solely responsible for how you
+use this software.
 
 Independent project — not affiliated with, endorsed by, or supported by Relaxe
 or Caldera. Reverse-engineered for personal interoperability.
