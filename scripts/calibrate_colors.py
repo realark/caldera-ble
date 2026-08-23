@@ -22,7 +22,7 @@ from caldera_sauna.protocol import Color, SaunaState
 
 # Nominal (app) labels, shown only as a hint — expect them to be wrong.
 NOMINAL = {c.value: c.name.title() for c in Color}
-MAX_INDEX = 9
+MAX_INDEX = 8  # 0..7 app range + hidden preset 8; index 9 is a confirmed no-op
 SETTLE_S = 1.8
 UNUSED = "\x00unused"  # sentinel
 

@@ -65,29 +65,42 @@ serial-over-BLE bridges:
 
 All are sent as the literal string + `\r\n`.
 
-| Function | TX string | Notes |
-| -------- | --------- | ----- |
-| Power ON | `XSWONZ` | |
-| Power OFF | `XSWOFZ` | |
-| Lamp ON | `XL1ONZ` | reading lamp / cabin light |
-| Lamp OFF | `XL1OFZ` | |
-| Color light ON | `XCLONZ` | RGB mood light on |
-| Color light OFF | `XCLOFZ` | |
-| Set color | `XCL0` + `n` + `Z` | `n` = `0`–`7`, e.g. `XCL03Z` |
-| Set target temp | `XT1` + `HH` + `Z` | `HH` = target as 2 uppercase hex digits, e.g. 45 → `XT12DZ` |
-| Set timer | `XTM` + `HH` + `Z` | `HH` = minutes as 2 hex digits, e.g. 30 → `XTM1EZ` |
-| Unit °C → °F | `XCTOFZ` | |
-| Unit °F → °C | `XFTOCZ` | |
-| Music: Bluetooth | `XMU01Z` | selects onboard BT audio input |
-| Music: USB | `XMU02Z` | selects USB audio input |
-| Music: off | `XMUOFZ` | |
-| Volume + | `XVLICZ` | only meaningful while BT/USB audio active |
-| Volume − | `XVLDCZ` | |
-| Track next | `XCHICZ` | |
-| Track prev | `XCHDCZ` | |
+| Function         | TX string          | Notes                                                       |
+|------------------|--------------------|-------------------------------------------------------------|
+| Power ON         | `XSWONZ`           |                                                             |
+| Power OFF        | `XSWOFZ`           |                                                             |
+| Lamp ON          | `XL1ONZ`           | reading lamp / cabin light                                  |
+| Lamp OFF         | `XL1OFZ`           |                                                             |
+| Color light ON   | `XCLONZ`           | RGB mood light on                                           |
+| Color light OFF  | `XCLOFZ`           |                                                             |
+| Set color        | `XCL0` + `n` + `Z` | `n` = `0`–`7`, e.g. `XCL03Z`                                |
+| Set target temp  | `XT1` + `HH` + `Z` | `HH` = target as 2 uppercase hex digits, e.g. 45 → `XT12DZ` |
+| Set timer        | `XTM` + `HH` + `Z` | `HH` = minutes as 2 hex digits, e.g. 30 → `XTM1EZ`          |
+| Unit °C → °F     | `XCTOFZ`           |                                                             |
+| Unit °F → °C     | `XFTOCZ`           |                                                             |
+| Music: Bluetooth | `XMU01Z`           | selects onboard BT audio input                              |
+| Music: USB       | `XMU02Z`           | selects USB audio input                                     |
+| Music: off       | `XMUOFZ`           |                                                             |
+| Volume +         | `XVLICZ`           | only meaningful while BT/USB audio active                   |
+| Volume −         | `XVLDCZ`           |                                                             |
+| Track next       | `XCHICZ`           |                                                             |
+| Track prev       | `XCHDCZ`           |                                                             |
 
-Color index `n`: 0 White, 1 Purple, 2 Blue, 3 Cyan, 4 Green, 5 Yellow,
-6 Changing (cycle), 7 Gradually (fade).
+Color index `n` — **nominal app labels** (0 White, 1 Purple, 2 Blue, 3 Cyan,
+4 Green, 5 Yellow, 6 Changing, 7 Gradually) are wrong. **Actual colors observed
+on hardware:**
+
+| index | real color       |
+|-------|------------------|
+| 0     | White            |
+| 1     | Yellow           |
+| 2     | Green            |
+| 3     | Cyan             |
+| 4     | Blue             |
+| 5     | Purple           |
+| 6     | Red              |
+| 7     | Changing (cycle) |
+| 8     | Gradually (fade) |
 
 > **Known quirk (confirmed on hardware):** the *actual* color the module lights
 > up for a given index does not match these nominal labels. The OEM app shows

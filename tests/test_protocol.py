@@ -33,9 +33,10 @@ def test_set_color(n):
 
 
 def test_set_color_enum_and_bounds():
-    assert p.cmd_set_color(Color.GREEN) == b"XCL04Z\r\n"
+    assert p.cmd_set_color(Color.BLUE) == b"XCL04Z\r\n"  # BLUE == 4
+    assert p.cmd_set_color(Color.GRADUALLY) == b"XCL08Z\r\n"  # hidden preset 8
     with pytest.raises(ValueError):
-        p.cmd_set_color(9)
+        p.cmd_set_color(9)  # firmware no-op, rejected
 
 
 def test_set_target_temp_hex_not_bcd():
@@ -94,12 +95,29 @@ def test_parse_all_on_celsius():
     st = p.parse_status("xoo41112d1e460z")
     assert st is not None
     assert st.power and st.lamp
-    assert st.color_on and st.color is Color.GREEN
+    assert st.color_on and st.color is Color.BLUE  # index 4 == BLUE
     assert st.audio is AudioSource.BLUETOOTH
     assert st.unit is TempUnit.CELSIUS
     assert st.current_temp == 45
     assert st.timer_minutes == 30
     assert st.target_temp == 70
+
+
+def test_parse_hidden_preset_index_8():
+    # 15 chars; idx3 == '8' -> the hidden GRADUALLY preset the app never exposes.
+    st = p.parse_status("xff80000000000z")
+    assert st is not None
+    assert st.color_on is True
+    assert st.color is Color.GRADUALLY
+
+
+def test_parse_unknown_color_index_does_not_drop_frame():
+    # idx3 == '9' (firmware no-op index): unknown preset -> color None, but the
+    # rest of the frame must still decode (frame not rejected).
+    st = p.parse_status("xff90000000000z")
+    assert st is not None
+    assert st.color_on is True
+    assert st.color is None
 
 
 def test_parse_rejects_garbage():

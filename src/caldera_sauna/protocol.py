@@ -22,16 +22,22 @@ TIMER_MAX = 60
 
 
 class Color(IntEnum):
-    """RGB mood-light presets (command ``XCL0<n>Z`` / status index 3)."""
+    """RGB mood-light presets (command ``XCL0<n>Z`` / status index 3).
+
+    Names are the colors actually observed on the hardware — the OEM app's
+    labels are scrambled (see PROTOCOL.md). Index 8 is a preset the app never
+    exposes; index 9 is a firmware no-op and is intentionally not a member.
+    """
 
     WHITE = 0
-    PURPLE = 1
-    BLUE = 2
+    YELLOW = 1
+    GREEN = 2
     CYAN = 3
-    GREEN = 4
-    YELLOW = 5
-    CHANGING = 6  # cycles through colors
-    GRADUALLY = 7  # fades between colors
+    BLUE = 4
+    PURPLE = 5
+    RED = 6
+    CHANGING = 7  # cycles through colors
+    GRADUALLY = 8  # fades between colors
 
 
 class AudioSource(IntEnum):

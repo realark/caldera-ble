@@ -1,8 +1,8 @@
 """Light entity: the RGB mood light (on/off + color preset as 'effect').
 
 The presets are exposed as effects rather than true RGB because the module only
-accepts a preset index, and (confirmed) the physical color for an index does not
-match its nominal name. Relabel EFFECTS to what your unit actually shows.
+accepts a preset index. The Color enum already carries the real observed color
+names (the OEM app's labels are scrambled), so EFFECTS derives straight from it.
 """
 from __future__ import annotations
 
@@ -17,8 +17,7 @@ from caldera_sauna.protocol import Color
 from . import CalderaConfigEntry
 from .entity import CalderaEntity
 
-# effect label -> protocol Color index. Names are the app's nominal labels;
-# edit these to match what your specific sauna actually lights up.
+# effect label -> protocol Color index, from the (observed-correct) Color enum.
 EFFECTS: dict[str, Color] = {c.name.title(): c for c in Color}
 _INDEX_TO_LABEL = {c: label for label, c in EFFECTS.items()}
 
