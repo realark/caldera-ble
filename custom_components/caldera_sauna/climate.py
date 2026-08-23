@@ -10,7 +10,7 @@ from homeassistant.components.climate import (
 )
 from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from caldera_sauna.protocol import TempUnit, model_from_name, temp_limits
 
@@ -21,7 +21,7 @@ from .entity import CalderaEntity
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: CalderaConfigEntry,
-    async_add_entities: AddConfigEntryEntitiesCallback,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     async_add_entities([CalderaClimate(entry.runtime_data)])
 

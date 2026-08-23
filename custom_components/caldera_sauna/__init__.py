@@ -8,6 +8,7 @@ from homeassistant.core import HomeAssistant
 from .coordinator import CalderaCoordinator
 
 PLATFORMS: list[Platform] = [
+    Platform.BINARY_SENSOR,
     Platform.CLIMATE,
     Platform.LIGHT,
     Platform.NUMBER,

@@ -33,6 +33,7 @@ That's it. You'll get:
 - **Light** — RGB mood light (color presets as effects)
 - **Switch** — cabin lamp
 - **Number** — session timer (minutes)
+- **Binary sensor** — fault/problem indicator (diagnostic)
 
 ### Manual install (without HACS)
 
@@ -70,6 +71,11 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"
 pytest                       # codec tests, no hardware
 ruff check src tests scripts custom_components
+
+# Home Assistant integration tests (separate env; needs Python <= 3.12 for now)
+python3.12 -m venv .venv-ha && . .venv-ha/bin/activate
+pip install -e ".[ha-test]"
+pytest tests_ha/ -o asyncio_mode=auto
 ```
 
 Device-specific info stays out of git — copy `.env.example` to `.env` and set

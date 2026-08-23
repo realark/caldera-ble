@@ -4,7 +4,7 @@ from __future__ import annotations
 from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.const import UnitOfTime
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from caldera_sauna.protocol import TIMER_MAX, TIMER_MIN
 
@@ -15,7 +15,7 @@ from .entity import CalderaEntity
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: CalderaConfigEntry,
-    async_add_entities: AddConfigEntryEntitiesCallback,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     async_add_entities([CalderaTimer(entry.runtime_data)])
 

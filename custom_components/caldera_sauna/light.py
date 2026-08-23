@@ -10,7 +10,7 @@ from typing import Any
 
 from homeassistant.components.light import ColorMode, LightEntity, LightEntityFeature
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from caldera_sauna.protocol import Color
 
@@ -25,7 +25,7 @@ _INDEX_TO_LABEL = {c: label for label, c in EFFECTS.items()}
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: CalderaConfigEntry,
-    async_add_entities: AddConfigEntryEntitiesCallback,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     async_add_entities([CalderaColorLight(entry.runtime_data)])
 

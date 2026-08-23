@@ -5,7 +5,7 @@ from typing import Any
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import CalderaConfigEntry
 from .entity import CalderaEntity
@@ -14,7 +14,7 @@ from .entity import CalderaEntity
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: CalderaConfigEntry,
-    async_add_entities: AddConfigEntryEntitiesCallback,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     async_add_entities([CalderaLamp(entry.runtime_data)])
 

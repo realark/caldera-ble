@@ -17,6 +17,9 @@
     }
   },
   "entity": {
+    "binary_sensor": {
+      "problem": { "name": "Problem" }
+    },
     "switch": {
       "lamp": { "name": "Cabin lamp" }
     },
