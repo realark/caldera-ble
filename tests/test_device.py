@@ -159,6 +159,46 @@ def test_write_retries_after_reconnect(monkeypatch):
     asyncio.run(go())
 
 
+def test_request_reconnect_wakes_backoff(monkeypatch):
+    # Huge backoff so the loop would otherwise sleep well past the test; the
+    # nudge must short-circuit it (mirrors HA seeing the sauna advertise again).
+    monkeypatch.setattr(device, "_RECONNECT_MIN_DELAY", 100.0)
+    clients: list[FakeClient] = []
+    monkeypatch.setattr(device, "establish_connection", _fake_establish(clients))
+
+    async def go():
+        s = CalderaSauna(_fake_device())
+        await s.start()
+
+        clients[0].drop()  # link drops; reconnect loop now waiting out backoff
+        await asyncio.sleep(0.05)
+        assert len(clients) == 1  # still waiting (would be ~100s without a nudge)
+
+        s.request_reconnect()  # advertisement seen -> reconnect now
+        await asyncio.sleep(0.05)
+        assert len(clients) == 2  # reconnected immediately
+        assert s.is_connected
+        await s.stop()
+
+    asyncio.run(go())
+
+
+def test_request_reconnect_noop_when_connected(monkeypatch):
+    monkeypatch.setattr(device, "_RECONNECT_MIN_DELAY", 0.01)
+    clients: list[FakeClient] = []
+    monkeypatch.setattr(device, "establish_connection", _fake_establish(clients))
+
+    async def go():
+        s = CalderaSauna(_fake_device())
+        await s.start()
+        s.request_reconnect()  # already connected -> nothing to do
+        await asyncio.sleep(0.05)
+        assert len(clients) == 1
+        await s.stop()
+
+    asyncio.run(go())
+
+
 def test_stop_prevents_reconnect(monkeypatch):
     monkeypatch.setattr(device, "_RECONNECT_MIN_DELAY", 0.01)
     clients: list[FakeClient] = []

@@ -69,6 +69,8 @@ class CalderaSauna:
         self._lock = asyncio.Lock()
         self._closing = False
         self._reconnect_task: asyncio.Task | None = None
+        self._reconnect_wake: asyncio.Event | None = None
+        self._reconnect_delay = _RECONNECT_MIN_DELAY
         self._loop: asyncio.AbstractEventLoop | None = None
 
     @property
@@ -91,6 +93,7 @@ class CalderaSauna:
         """Connect and subscribe to status notifications. Sends nothing."""
         self._closing = False
         self._loop = asyncio.get_running_loop()
+        self._reconnect_wake = asyncio.Event()
         await self._connect()
 
     def _current_device(self) -> BLEDevice:
@@ -147,18 +150,49 @@ class CalderaSauna:
         if self._reconnect_task is None or self._reconnect_task.done():
             self._reconnect_task = self._loop.create_task(self._reconnect_loop())
 
+    def request_reconnect(self) -> None:
+        """Nudge the reconnect loop to attempt a connection right now.
+
+        Home Assistant calls this when its Bluetooth stack sees the sauna
+        advertise again: rather than waiting out the exponential backoff, retry
+        immediately and reset the backoff, since the device is evidently in
+        range. Must be called from the event loop thread. No-op if already
+        connected, not started, or closing.
+        """
+        if self._closing or self._loop is None or self.is_connected:
+            return
+        self._reconnect_delay = _RECONNECT_MIN_DELAY
+        self._schedule_reconnect()
+        if self._reconnect_wake is not None:
+            self._reconnect_wake.set()
+
     async def _reconnect_loop(self) -> None:
-        delay = _RECONNECT_MIN_DELAY
+        self._reconnect_delay = _RECONNECT_MIN_DELAY
         while not self._closing:
-            await asyncio.sleep(delay)
+            # Wait out the backoff, but wake early if an advertisement nudge
+            # (request_reconnect) arrives — the device just came back in range.
+            if self._reconnect_wake is not None:
+                try:
+                    await asyncio.wait_for(
+                        self._reconnect_wake.wait(), self._reconnect_delay
+                    )
+                except TimeoutError:
+                    pass
+                self._reconnect_wake.clear()
+            else:
+                await asyncio.sleep(self._reconnect_delay)
             if self._closing:
+                return
+            if self.is_connected:
                 return
             try:
                 await self._connect()
                 return
             except Exception as err:  # noqa: BLE001 - keep retrying on any error
                 _LOGGER.debug("Reconnect to %s failed: %s", self.address, err)
-                delay = min(delay * 2, _RECONNECT_MAX_DELAY)
+                self._reconnect_delay = min(
+                    self._reconnect_delay * 2, _RECONNECT_MAX_DELAY
+                )
 
     async def stop(self) -> None:
         self._closing = True

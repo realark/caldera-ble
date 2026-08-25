@@ -7,11 +7,17 @@ connection route through ESPHome BLE proxies transparently.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 
 from bleak.backends.device import BLEDevice
 from homeassistant.components import bluetooth
+from homeassistant.components.bluetooth import (
+    BluetoothChange,
+    BluetoothScanningMode,
+    BluetoothServiceInfoBleak,
+)
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
@@ -33,6 +39,7 @@ class CalderaCoordinator(DataUpdateCoordinator[SaunaState]):
         self._entry = entry
         self._address = address
         self._sauna: CalderaSauna | None = None
+        self._unsub_bluetooth: Callable[[], None] | None = None
 
     @property
     def address(self) -> str:
@@ -62,6 +69,15 @@ class CalderaCoordinator(DataUpdateCoordinator[SaunaState]):
             device_provider=self._ble_device,
         )
         await self._sauna.start()
+        # Reconnect promptly whenever HA's Bluetooth stack sees the sauna
+        # advertise again, instead of waiting out the library's backoff. This
+        # is what recovers the link after the adapter/proxy has a hiccup.
+        self._unsub_bluetooth = bluetooth.async_register_callback(
+            self.hass,
+            self._on_advertisement,
+            {"address": self._address, "connectable": True},
+            BluetoothScanningMode.ACTIVE,
+        )
 
     def _on_state(self, state: SaunaState) -> None:
         # Called from the BLE notify callback; hop onto the event loop.
@@ -77,7 +93,19 @@ class CalderaCoordinator(DataUpdateCoordinator[SaunaState]):
         self.last_update_success = False
         self.async_update_listeners()
 
+    @callback
+    def _on_advertisement(
+        self, service_info: BluetoothServiceInfoBleak, change: BluetoothChange
+    ) -> None:
+        # Fired in the event loop when HA receives an advertisement from the
+        # sauna. If we're currently disconnected, nudge an immediate reconnect.
+        if self._sauna is not None:
+            self._sauna.request_reconnect()
+
     async def async_stop(self) -> None:
+        if self._unsub_bluetooth is not None:
+            self._unsub_bluetooth()
+            self._unsub_bluetooth = None
         if self._sauna is not None:
             await self._sauna.stop()
             self._sauna = None
